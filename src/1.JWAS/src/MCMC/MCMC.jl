@@ -42,13 +42,13 @@ include("output.jl")
 """
 function runMCMC(mme::MME,df;
                 #chain
-                chain_length                    = 100,
-                starting_value                  = false,
-                burnin                          = 0,
-                output_samples_file             = "MCMC_samples",
-                output_samples_frequency::Int64 = 0,
-                printout_model_info             = true,
-                printout_frequency              = chain_length+1,
+                chain_length                      = 100,
+                starting_value                    = false,
+                burnin                            = 0,
+                output_samples_file               = "MCMC_samples",
+                output_samples_frequency::Integer = 0,
+                printout_model_info               = true,
+                printout_frequency                = chain_length+1,
                 #methods
                 methods                         = "conventional (no markers)",
                 Pi                              = 0.0,
@@ -57,7 +57,7 @@ function runMCMC(mme::MME,df;
                 missing_phenotypes              = true,
                 constraint                      = false,
                 estimate_variance               = true,
-                update_priors_frequency::Int64  = 0,
+                update_priors_frequency::Integer= 0,
                 #parameters for single-step analysis
                 single_step_analysis            = false,
                 pedigree                        = false,
@@ -110,7 +110,7 @@ function runMCMC(mme::MME,df;
     ############################################################################
     # Initiate Mixed Model Equations for Non-marker Parts (run after SSBRrun for ϵ & J)
     ############################################################################
-    starting_value,df = init_mixed_model_equations(mme,df,starting_value)
+    starting_value,df = init_mixed_model_equations(mme,df,starting_value,Float64)
 
     if mme.M!=0
         #align genotypes with 1) phenotypes IDs; 2) output IDs.

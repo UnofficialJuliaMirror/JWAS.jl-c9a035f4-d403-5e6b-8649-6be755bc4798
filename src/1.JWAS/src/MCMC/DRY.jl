@@ -125,13 +125,13 @@ function check_phenotypes(mme,df)
     return df
 end
 
-function init_mixed_model_equations(mme,df,sol)
-    getMME(mme,df)
+function init_mixed_model_equations(mme,df,sol,T::DataType=Float64)
+    getMME(mme,df,T)
     #starting value for sol can be provided
     if sol == false #no starting values
-        sol = zeros(size(mme.mmeLhs,1))
+        sol = zeros(T,size(mme.mmeLhs,1))
     else            #besure type is Float64
-        sol = map(Float64,sol)
+        sol = map(T,sol)
     end
     return sol,df
 end
