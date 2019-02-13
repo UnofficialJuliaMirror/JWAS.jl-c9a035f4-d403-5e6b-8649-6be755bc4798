@@ -1,5 +1,5 @@
 """
-    add_genotypes(mme::MME,file,G;separator=' ',header=true,center=true,G_is_marker_variance=false,df=4.0)
+    add_genotypes(mme::MME,file,G;separator=' ',header=true,center=true,G_is_marker_variance=false,df=4.0,speedup=false)
 * Get marker informtion from a genotype file.
 * **G** defaults to the genetic variance with degree of freedom **df**=4.0.
 * File format:
@@ -12,8 +12,8 @@ O1,1,2,0,1,0
 O3,0,0,2,1,1
 ```
 """
-function add_genotypes(mme::MME,file,G;separator=',',header=true,center=true,G_is_marker_variance=false,df=4)
-    mme.M   = readgenotypes(file;separator=separator,header=header,center=center)
+function add_genotypes(mme::MME,file,G;separator=',',header=true,center=true,G_is_marker_variance=false,df=4,speedup=false)
+    mme.M   = readgenotypes(file;separator=separator,header=header,center=center,speedup=speedup)
     if G_is_marker_variance == true
         mme.M.G = G
     else
@@ -32,7 +32,7 @@ function add_markers(mme::MME,file,G;separator=',',header=true,center=true,G_is_
 end
 
 #load genotypes from a text file (individual IDs in the 1st column)
-function readgenotypes(file::AbstractString;separator=',',header=true,center=true)
+function readgenotypes(file::AbstractString;separator=',',header=true,center=true,speedup=false)
     printstyled("The delimiter in ",split(file,['/','\\'])[end]," is \'",separator,"\'.\n",bold=false,color=:red)
     printstyled("The header (marker IDs) is ",(header ? "provided" : "not provided")," in ",split(file,['/','\\'])[end],".\n",bold=false,color=:red)
 
@@ -56,7 +56,7 @@ function readgenotypes(file::AbstractString;separator=',',header=true,center=tru
     #df = CSV.read(file, types=etv, delim = separator, header=header)
     df = readtable(file, eltypes=etv, separator = separator, header=header)
     obsID     = map(string,df[1]) #convert from Array{Union{String, Missings.Missing},1} to String #redundant actually
-    genotypes = map(Float64,convert(Matrix,df[2:end]))
+    genotypes = (speedup == false ? map(Float64,convert(Matrix,df[2:end])) : map(Float32,convert(Matrix,df[2:end])))
     nObs,nMarkers = size(genotypes)
 
     ##readdlm
@@ -80,7 +80,7 @@ function readgenotypes(file::AbstractString;separator=',',header=true,center=tru
 end
 
 #load genotypes from Array or DataFrames (individual IDs in the 1st column,
-function readgenotypes(df::Union{Array{Float64,2},DataFrames.DataFrame};header=false,separator=false,center=true)
+function readgenotypes(df::Union{Array{Float64,2},DataFrames.DataFrame};header=false,separator=false,center=true,speedup=false)
     if header==true
         error("The header (marker IDs) must be false or provided as an array when the input is not a file.")
     end
@@ -95,10 +95,10 @@ function readgenotypes(df::Union{Array{Float64,2},DataFrames.DataFrame};header=f
 
     if typeof(df) == DataFrames.DataFrame
         obsID     = map(string,df[1])
-        genotypes = map(Float64,convert(Array,df[2:end]))
+        genotypes = (speedup == false ? map(Float64,convert(Matrix,df[2:end])) : map(Float32,convert(Matrix,df[2:end])))
     else
-        obsID         = map(string,view(df,:,1))
-        genotypes     = map(Float64,convert(Array,view(df,:,2:size(df,2))))
+        obsID     = map(string,view(df,:,1))
+        genotypes = (speedup == false ? map(Float64,convert(Matrix,view(df,:,2:size(df,2)))) : map(Float32,convert(Matrix,view(df,:,2:size(df,2)))))
     end
     nObs,nMarkers = size(genotypes)
 
