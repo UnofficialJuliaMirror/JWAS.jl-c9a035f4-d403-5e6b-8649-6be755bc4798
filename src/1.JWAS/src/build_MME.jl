@@ -86,7 +86,7 @@ end
 #Fill up str and val for each ModelTerm
 ################################################################################
 
-function getData(trm::ModelTerm,df::DataFrame,mme::MME,T::DataType=Float64) #ModelTerm("1:A*B")
+function getData(trm::ModelTerm,df::DataFrame,mme::MME) #ModelTerm("1:A*B")
   nObs    = size(df,1)
 
   if trm.factors[1] == :intercept #for intercept
@@ -116,7 +116,7 @@ function getData(trm::ModelTerm,df::DataFrame,mme::MME,T::DataType=Float64) #Mod
     end
   end
   trm.str = str
-  trm.val = map(T,val)
+  trm.val = val
 end
 
 #getFactor1(str) = [strip(i) for i in split(str,"*")][1] #Bug:only for animal*age, not age*animal
@@ -126,7 +126,7 @@ getFactor(str) = [strip(i) for i in split(str,"*")]
 # make incidence matrix for each ModelTerm
 #
 ################################################################################
-function getX(trm::ModelTerm,mme::MME,T::DataType=Float64)
+function getX(trm::ModelTerm,mme::MME)
     #Row Index
     nObs  = length(trm.str)
     xi    = (trm.iModel-1)*nObs .+ collect(1:nObs)
@@ -201,7 +201,7 @@ function getX(trm::ModelTerm,mme::MME,T::DataType=Float64)
     xv = [xv;0]
 
     #create X
-    trm.X = sparse(xi,xj,map(T,xv))
+    trm.X = sparse(xi,xj,xv)
     dropzeros!(trm.X)
     trm.startPos = mme.mmePos
     mme.mmePos  += trm.nLevels
@@ -215,7 +215,7 @@ response        : ySparse;
 left-hand side  : mmeLhs ;
 right-hand side : mmeLhs ;
 """
-function getMME(mme::MME, df::DataFrame,T::DataType=Float64)
+function getMME(mme::MME, df::DataFrame)
     df[1]=map(string,df[1]) ##same to df[:,1] in deprecated CSV
     if mme.mmePos != 1
       error("Please build your model again using the function build_model().")
@@ -223,8 +223,8 @@ function getMME(mme::MME, df::DataFrame,T::DataType=Float64)
 
     #Make incidence matrices X for each term
     for trm in mme.modelTerms
-      getData(trm,df,mme,T)
-      getX(trm,mme,T)
+      getData(trm,df,mme)
+      getX(trm,mme)
     end
     #concatenate all terms
     X   = mme.modelTerms[1].X
@@ -240,7 +240,7 @@ function getMME(mme::MME, df::DataFrame,T::DataType=Float64)
     end
     ii    = 1:length(y)
     jj    = ones(length(y))
-    vv    = map(T,y)
+    vv    = map(Float64,y)
     ySparse = sparse(ii,jj,vv)
 
     #Make lhs and rhs for MME
