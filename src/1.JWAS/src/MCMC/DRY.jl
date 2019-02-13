@@ -125,8 +125,8 @@ function check_phenotypes(mme,df)
     return df
 end
 
-function init_mixed_model_equations(mme,df,sol,T::DataType=Float64)
-    getMME(mme,df,T)
+function init_mixed_model_equations(mme,df,sol)
+    getMME(mme,df)
     #starting value for sol can be provided
     if sol == false #no starting values
         sol = zeros(T,size(mme.mmeLhs,1))
@@ -134,4 +134,16 @@ function init_mixed_model_equations(mme,df,sol,T::DataType=Float64)
         sol = map(T,sol)
     end
     return sol,df
+end
+
+function speedup(mme,starting_value)
+    starting_value = map(Float32,starting_value)
+    mme.X          = map(Float32,mme.X)
+    mme.ySparse    = map(Float32,mme.ySparse)
+    mme.mmeLhs     = map(Float32,mme.mmeLhs)
+    mme.mmeRhs     = map(Float32,mme.mmeRhs)
+    if mme.pedTrmVec != 0 #if no SSBR
+        mme.Ai = map(Float32,mme.Ai)
+    end
+    return starting_value
 end

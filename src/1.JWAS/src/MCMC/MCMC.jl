@@ -110,7 +110,15 @@ function runMCMC(mme::MME,df;
     ############################################################################
     # Initiate Mixed Model Equations for Non-marker Parts (run after SSBRrun for ϵ & J)
     ############################################################################
-    starting_value,df = init_mixed_model_equations(mme,df,starting_value,Float64)
+    starting_value,df = init_mixed_model_equations(mme,df,starting_value)
+    ############################################################################
+    # Speed up
+    ############################################################################
+    if speedup == true
+        starting_values = speedup(mme,starting_value)
+    end
+
+
 
     if mme.M!=0
         #align genotypes with 1) phenotypes IDs; 2) output IDs.
