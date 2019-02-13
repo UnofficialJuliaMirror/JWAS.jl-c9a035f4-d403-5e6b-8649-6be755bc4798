@@ -23,7 +23,7 @@ end
 ################################################################################
 # sample variances for IID random location effects
 ################################################################################
-function sampleVCs(mme::MME,sol::Array{Float64,1})
+function sampleVCs(mme::MME,sol::Array{Float64,1};speedup=false)
     for random_term in mme.rndTrmVec
       term_array = random_term.term_array
       nLevels    = mme.modelTermDict[term_array[1]].nLevels
@@ -46,6 +46,12 @@ function sampleVCs(mme::MME,sol::Array{Float64,1})
        random_term.GiOld = copy(random_term.GiNew)
        random_term.GiNew = copy(inv(G0))
        random_term.Gi    = copy(inv(G0))
+
+       if speedup == true
+           random_term.GiOld = map(Float32,random_term.GiOld)
+           random_term.GiNew = map(Float32,random_term.GiNew)
+           random_term.Gi    = map(Float32,random_term.Gi)
+       end
     end
 end
 
@@ -54,7 +60,7 @@ end
 ################################################################################
 # sample variances for Polygenic Effects (Genetic Covariance Matrix)           #
 ################################################################################
-function sample_variance_pedigree(mme,pedTrmVec,sol,P,S,νG0)
+function sample_variance_pedigree(mme,pedTrmVec,sol,P,S,νG0;speedup=false)
     for (i,trmi) = enumerate(pedTrmVec)
         pedTrmi   = mme.modelTermDict[trmi]
         startPosi = pedTrmi.startPos
@@ -66,12 +72,18 @@ function sample_variance_pedigree(mme,pedTrmVec,sol,P,S,νG0)
             S[i,j]    = sol[startPosi:endPosi]'*mme.Ai*sol[startPosj:endPosj]
         end
     end
-
     q  = mme.modelTermDict[pedTrmVec[1]].nLevels
     G0 = rand(InverseWishart(νG0 + q, convert(Array,Symmetric(P + S))))
 
     mme.GiOld = copy(mme.GiNew)
     mme.GiNew = copy(inv(G0))
     mme.Gi    = copy(inv(G0))
+
+    if speedup == true
+        mme.GiOld = map(Float32,mme.GiOld)
+        mme.GiNew = map(Float32,mme.GiNew)
+        mme.Gi    = map(Float32,mme.Gi)
+    end
+
     return G0
 end

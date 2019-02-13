@@ -206,7 +206,7 @@ end
 function addLambdas(mme::MME)
     for random_term in mme.rndTrmVec
       term_array = random_term.term_array
-      Vi         = (random_term.Vinv!=0) ? random_term.Vinv : SparseMatrixCSC{Float64}(I, mme.modelTermDict[term_array[1]].nLevels, mme.modelTermDict[term_array[1]].nLevels)
+      Vi         = (random_term.Vinv!=0) ? random_term.Vinv : SparseMatrixCSC{Float32}(I, mme.modelTermDict[term_array[1]].nLevels, mme.modelTermDict[term_array[1]].nLevels) #enable Float32 and Float64
       for (i,termi) = enumerate(term_array)
           randTrmi   = mme.modelTermDict[termi]
           startPosi  = randTrmi.startPos
