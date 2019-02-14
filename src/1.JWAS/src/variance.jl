@@ -6,8 +6,11 @@
 #Given X ~ Inv-⁠χ2(df) <=> Y = 1/X ~ χ2(df)                                     *
 #These transformations are indicated by names already                          *
 #*******************************************************************************
-function sample_variance(x, n, df, scale)
-    return (dot(x,x) + df*scale)/rand(Chisq(n+df))
+function sample_variance(x, n, df, scale;speedup=false)
+    res = dot(x,x) + df*scale)/rand(Chisq(n+df)
+    if speedup == true
+        res = map(Float64,res)
+    return res
 end
 
 ################################################################################
