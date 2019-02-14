@@ -18,7 +18,7 @@ end
 
 #make tricky Ri (big) allowing NA in phenotypes and fixed effects
 #make ResVar, dictionary for Rinv, no sample Missing residuals
-function mkRi(mme::MME,df::DataFrame,T::DataType=Float64)
+function mkRi(mme::MME,df::DataFrame)
     resVar   = ResVar(mme.R,Dict())
     tstMsng  = .!ismissing.(convert(Matrix,df[mme.lhsVec]))
     mme.missingPattern = tstMsng
@@ -26,7 +26,7 @@ function mkRi(mme::MME,df::DataFrame,T::DataType=Float64)
     nObs   = size(tstMsng,1)
     ii = Array{Int64}(undef,nObs*ntrait^2)
     jj = Array{Int64}(undef,nObs*ntrait^2)
-    vv = Array{T}(undef,nObs*ntrait^2)
+    vv = Array{Float64}(undef,nObs*ntrait^2)
     pos = 1
     for i=1:nObs
         sel = tstMsng[i,:]

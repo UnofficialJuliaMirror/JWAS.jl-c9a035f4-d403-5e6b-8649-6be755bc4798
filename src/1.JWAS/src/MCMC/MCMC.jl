@@ -118,8 +118,6 @@ function runMCMC(mme::MME,df;
         starting_values = speedup(mme,starting_value)
     end
 
-
-
     if mme.M!=0
         #align genotypes with 1) phenotypes IDs; 2) output IDs.
         align_genotypes(mme,output_heritability,single_step_analysis)

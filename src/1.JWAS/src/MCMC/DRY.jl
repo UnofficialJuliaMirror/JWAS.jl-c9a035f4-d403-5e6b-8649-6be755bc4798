@@ -145,5 +145,12 @@ function speedup(mme,starting_value)
     if mme.pedTrmVec != 0 #if no SSBR
         mme.Ai = map(Float32,mme.Ai)
     end
+    mme.R     = map(Float32,mme.R)
+    mme.RNew  = map(Float32,mme.RNew)
+    mme.ROld  = map(Float32,mme.ROld)
+    mme.Gi    = map(Float32,mme.Gi)
+    mme.GiOld = map(Float32,mme.GiOld)
+    mme.GiNew = map(Float32,mme.GiNew)
+
     return starting_value
 end

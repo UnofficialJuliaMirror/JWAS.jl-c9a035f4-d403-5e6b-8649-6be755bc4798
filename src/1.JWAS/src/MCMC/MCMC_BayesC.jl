@@ -12,7 +12,8 @@ function MCMC_BayesC(nIter,mme,df;
                      output_samples_frequency   = 0,
                      update_priors_frequency    = 0,
                      output_file                = "MCMC_samples",
-                     categorical_trait          = false)
+                     categorical_trait          = false,
+                     speedup                    = false)
 
     ############################################################################
     # Pre-Check
@@ -96,6 +97,20 @@ function MCMC_BayesC(nIter,mme,df;
     end
 
     ############################################################################
+    #  SPEED UP
+    ############################################################################
+    if speedup == true
+        ycorr       = map(Float32,ycorr)
+        α           = map(Float32,α)
+        δ           = map(Float32,δ)
+        meanAlpha   = map(Float32,meanAlpha)
+        if methods == "BayesB" #α=β.*δ
+            β  = map(Float32,β)
+        end
+        vRes = map(Float32,vRes)
+    end
+
+    ############################################################################
     # MCMC (starting values for sol (zeros);  vRes; G0 are used)
     ############################################################################
     @showprogress "running MCMC for "*methods*"..." for iter=1:nIter
@@ -163,7 +178,7 @@ function MCMC_BayesC(nIter,mme,df;
         # 2.1 Genetic Covariance Matrix (Polygenic Effects) (variance.jl)
         ########################################################################
         if mme.pedTrmVec != 0
-            G0=sample_variance_pedigree(mme,pedTrmVec,sol,P,S,νG0)
+            G0=sample_variance_pedigree(mme,pedTrmVec,sol,P,S,νG0,speedup=speedup)
             addA(mme)
             if iter > burnin
                 G0Mean  += (G0  - G0Mean )/(iter-burnin)
@@ -179,7 +194,10 @@ function MCMC_BayesC(nIter,mme,df;
         ########################################################################
         if categorical_trait == false
             mme.ROld = mme.RNew
-            vRes     = sample_variance(ycorr, length(ycorr), nuRes, scaleRes)
+            vRes     = sample_variance(ycorr, length(ycorr), nuRes, scaleRes,speedup=speedup)
+            if speedup == true
+                vRes = map(Float32,vRes)
+            end
             mme.RNew = vRes
             if iter > burnin
                 meanVare += (vRes - meanVare)/(iter-burnin)
