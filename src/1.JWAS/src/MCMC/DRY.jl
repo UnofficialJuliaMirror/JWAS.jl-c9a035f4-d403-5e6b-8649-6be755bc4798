@@ -2,6 +2,10 @@
 # Pre-Check
 ################################################################################
 function errors_args(mme,methods)
+    if mme.mmePos != 1
+      error("Please build your model again using the function build_model().")
+    end
+
     Pi         = mme.MCMCinfo.Pi
     estimatePi = mme.MCMCinfo.estimatePi
     if methods == "conventional (no markers)"
@@ -37,6 +41,8 @@ function errors_args(mme,methods)
             error("GBLUP runs with genotypes.")
         elseif mme.M.genetic_variance == false
             error("Please provide values for the genetic variance for GBLUP analysis")
+        elseif estimatePi == true
+            error("GBLUP runs with estimatePi = false.")
         end
     end
     if mme.nModels > 1 && mme.M!=0
@@ -49,6 +55,8 @@ end
 function check_pedigree(mme,df,pedigree)
     if mme.ped == 0 && pedigree == false
         return
+    elseif pedigree != false
+        mme.ped = pedigree
     end
     if pedigree!=false
         pedID=map(string,collect(keys(pedigree.idMap)))

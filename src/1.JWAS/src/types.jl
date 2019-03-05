@@ -1,4 +1,3 @@
-
 ################################################################################
 # model__equations = "y1 = A + B
 #                     y2 = A + B + A*B"
@@ -149,14 +148,20 @@ mutable struct MME
     GiOld::Array{T,2} where T<:AbstractFloat      #specific for lambda version of MME (single-trait)
     GiNew::Array{T,2} where T<:AbstractFloat      #specific for lambda version of MME (single-trait)
 
-    rndTrmVec::Array{RandomEffect,1}              #iid random effects
-    #should have one for pedigree randomEffect (make pedigree) also RandomEffect later
+    rndTrmVec::Array{RandomEffect,1}              #General (including i.i.d.) random effects
+                                                  #may merge pedTrmVec here
+
                                                   #RESIDUAL EFFECTS
     R::Array{T,2} where T<:AbstractFloat          #residual covariance matrix (multi-trait)
     missingPattern                                #for impuation of missing residual
     resVar                                        #for impuation of missing residual
+<<<<<<< HEAD
     ROld::T where T<:AbstractFloat                #residual variance (single-trait)
     RNew::T where T<:AbstractFloat                #for lambda version of MME (single-trait)
+=======
+    ROld::Float64                                 #residual variance (single-trait) for
+    RNew::Float64                                 #lambda version of MME (single-trait)
+>>>>>>> master
 
     M                                             #GENOTYPES
 

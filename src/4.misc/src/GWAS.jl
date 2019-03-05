@@ -6,24 +6,31 @@ Compute the model frequency for each marker (the probability the marker is inclu
 function GWAS(marker_effects_file;header=true)
     file = marker_effects_file
     if header==true
-        samples,markerID =readdlm(file,',',header=true)[1]
+        samples,markerID =readdlm(file,',',header=true)
     else
         samples=readdlm(file,',')
     end
 
     modelfrequency = vec(mean(samples .!= 0.0,dims=1))
     if header==true
-        out = [markerID modelfrequency]
+        out = [vec(markerID) modelfrequency]
     else
         out = modelfrequency
     end
     return out
 end
 
-#window size
-#same number of SNPs in each window
-#an array of number of SNPs in each window
+"""
+    GWAS(marker_effects_file,model;header=true,window_size="1 Mb",threshold=0.001)
 
+run genomic window-based GWAS without marker locations
+
+* MCMC samples of marker effects are stored in **marker_effects_file** with delimiter ','.
+* **window_size** is either a constant (identical number of markers in each window) or an array of number of markers in each window
+* **model** is either the model::MME used in analysis or the genotypic cavariate matrix M::Array
+* File format:
+
+"""
 function GWAS(marker_effect_file,mme;header=true,window_size=100,threshold=0.001)
     println("Compute the posterior probability of association of the genomic window that explains more than ",threshold," of the total genetic variance")
 
@@ -42,8 +49,11 @@ function GWAS(marker_effect_file,mme;header=true,window_size=100,threshold=0.001
     end
 
     winVarProps = zeros(nsamples,nWindows)
-    #X           = mme.M.genotypes
-    X           = mme.output_genotypes
+    if typeof(mme) <: Array
+        X = mme
+    else
+        X = mme.output_genotypes
+    end
 
     @showprogress for i=1:nsamples
         α = output[i,:]
@@ -76,14 +86,27 @@ end
 #by LD r2 were also determined using the BALD R package (Dehman and Neuvial 2015),
 #using the procedure described by Dehman et al. (2015).
 """
-    GWAS(marker_effects_file,map_file,model;header=false,window_size="1 Mb",threshold=0.001)
+    GWAS(marker_effects_file,map_file,model;header=true,window_size="1 Mb",threshold=0.001)
 
 run genomic window-based GWAS
 
-* MCMC samples of marker effects are stored in **marker_effects_file**
-* **map_file** has the marker position information
+* MCMC samples of marker effects are stored in **marker_effects_file** with delimiter ','.
+* **model** is either the model::MME used in analysis or the genotypic cavariate matrix M::Array
+* **map_file** has the (sorted) marker position information with delimiter ','.
+* File format:
+
+```
+markerID,chromosome,position
+m1,1,16977
+m2,1,434311
+m3,1,1025513
+m4,2,70350
+m5,2,101135
+```
+
+
 """
-function GWAS(marker_effects_file,map_file,mme;header=false,window_size="1 Mb",threshold=0.001,output_winVarProps=false)
+function GWAS(marker_effects_file,map_file,mme;header=true,window_size="1 Mb",threshold=0.001,output_winVarProps=false)
 
     if window_size=="1 Mb"
         window_size_Mb = 1_000_000
@@ -91,7 +114,11 @@ function GWAS(marker_effects_file,map_file,mme;header=false,window_size="1 Mb",t
         window_size_Mb = map(Int64,parse(Float64,split(window_size)[1])*1_000_000)
     end
 
-    mapfile = readdlm(map_file,',')
+    if header == true
+        mapfile = readdlm(map_file,',',header=true)[1]
+    else
+        mapfile = readdlm(map_file,',')
+    end
     chr     = map(string,mapfile[:,2])
     pos     = map(Int64,mapfile[:,3])
 
@@ -103,7 +130,7 @@ function GWAS(marker_effects_file,map_file,mme;header=false,window_size="1 Mb",t
     window_snp_end   = Array{Int64,1}()
 
     for i in unique(chr)
-      pos_on_chri     = pos[chr.== i] #assume pos are sorted ?not good
+      pos_on_chri     = pos[chr.== i] #assume chr and pos are sorted
       nwindow_on_chri = ceil(Int64,pos_on_chri[end]/window_size_Mb)
 
       for j in 1: nwindow_on_chri
