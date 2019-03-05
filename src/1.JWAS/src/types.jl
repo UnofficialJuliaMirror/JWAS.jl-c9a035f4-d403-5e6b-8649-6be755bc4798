@@ -155,13 +155,8 @@ mutable struct MME
     R::Array{T,2} where T<:AbstractFloat          #residual covariance matrix (multi-trait)
     missingPattern                                #for impuation of missing residual
     resVar                                        #for impuation of missing residual
-<<<<<<< HEAD
-    ROld::T where T<:AbstractFloat                #residual variance (single-trait)
-    RNew::T where T<:AbstractFloat                #for lambda version of MME (single-trait)
-=======
-    ROld::Float64                                 #residual variance (single-trait) for
-    RNew::Float64                                 #lambda version of MME (single-trait)
->>>>>>> master
+    ROld::T where T<:AbstractFloat                #residual variance (single-trait) for
+    RNew::T where T<:AbstractFloat                #lambda version of MME (single-trait)
 
     M                                             #GENOTYPES
 
